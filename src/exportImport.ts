@@ -14,7 +14,8 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 }
 
 function dataUrlToBlob(dataUrl: string): Blob {
-  const match = /^data:([^;,]*)(;base64)?,(.*)$/s.exec(dataUrl);
+  // `[^,]*?` tolerates MIME parameters (e.g. image/svg+xml;charset=utf-8;base64)
+  const match = /^data:([^,]*?)(;base64)?,(.*)$/s.exec(dataUrl);
   if (!match) throw new Error('Import failed: invalid cover data URL');
   const mime = match[1] || '';
   const isBase64 = Boolean(match[2]);

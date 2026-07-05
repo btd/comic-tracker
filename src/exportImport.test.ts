@@ -28,6 +28,19 @@ describe('exportImport', () => {
     expect(await out[0].coverBlob!.text()).toBe('hello');
   });
 
+  it('decodes a file cover whose data URL carries MIME parameters', async () => {
+    const env = {
+      app: 'comic-tracker', version: 1, exportedAt: 1,
+      series: [{
+        id: 'a', title: 'T', coverType: 'file',
+        coverDataUrl: 'data:image/svg+xml;charset=utf-8;base64,PHN2Zz48L3N2Zz4=',
+      }],
+    };
+    const out = await deserialize(JSON.stringify(env));
+    expect(out[0].coverBlob).toBeInstanceOf(Blob);
+    expect(await out[0].coverBlob!.text()).toBe('<svg></svg>');
+  });
+
   it('ignores unknown extra fields (forward compatible)', async () => {
     const env = JSON.parse(await serialize([make()]));
     env.series[0].somethingNew = 42;
