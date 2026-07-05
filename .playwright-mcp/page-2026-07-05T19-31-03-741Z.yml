@@ -1,0 +1,71 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - heading "Comic Tracker" [level=1] [ref=e5]
+    - generic [ref=e6]:
+      - img [ref=e7]
+      - textbox "Search title..." [ref=e10]
+    - combobox [ref=e11]:
+      - option "All statuses" [selected]
+      - option "Reading"
+      - option "Completed"
+      - option "On hold"
+      - option "Dropped"
+    - combobox [ref=e12]:
+      - option "Recently updated" [selected]
+      - option "Title A–Z"
+      - option "Chapter high→low"
+    - button "Add" [ref=e13] [cursor=pointer]:
+      - img [ref=e14]
+      - text: Add
+    - button "Export" [ref=e15] [cursor=pointer]:
+      - img [ref=e16]
+      - text: Export
+    - button "Import" [ref=e19] [cursor=pointer]:
+      - img [ref=e20]
+      - text: Import
+  - generic [ref=e23]:
+    - img [ref=e24]
+    - paragraph [ref=e26]: No series yet. Add your first one!
+  - generic [ref=e28]:
+    - generic [ref=e29]:
+      - heading "Add series" [level=2] [ref=e30]
+      - button "Close" [ref=e31] [cursor=pointer]:
+        - img [ref=e32]
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - text: Title*
+        - textbox "Title*" [active] [ref=e37]
+      - generic [ref=e38]:
+        - text: Author
+        - textbox "Author" [ref=e39]
+      - generic [ref=e40]:
+        - text: Link
+        - textbox "Link" [ref=e41]:
+          - /placeholder: https://...
+      - generic [ref=e42]:
+        - text: Platform label
+        - textbox "Platform label" [ref=e43]:
+          - /placeholder: Webtoons
+      - generic [ref=e44]:
+        - text: Last chapter
+        - spinbutton "Last chapter" [ref=e45]: "0"
+      - generic [ref=e46]:
+        - text: Status
+        - combobox "Status" [ref=e47]:
+          - option "Reading" [selected]
+          - option "Completed"
+          - option "On hold"
+          - option "Dropped"
+      - group "Cover" [ref=e48]:
+        - generic [ref=e49]: Cover
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - radio "Image URL" [checked] [ref=e52]
+            - text: Image URL
+          - generic [ref=e53]:
+            - radio "Upload file" [ref=e54]
+            - text: Upload file
+        - textbox "https://.../cover.jpg" [ref=e55]
+    - generic [ref=e56]:
+      - button "Cancel" [ref=e57] [cursor=pointer]
+      - button "Save" [ref=e58] [cursor=pointer]

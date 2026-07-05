@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Minus, Pencil, Trash2, ExternalLink } from 'lucide-react';
 import type { Series } from '../types';
-import { resolveCover } from '../lib/cover';
+import { resolveCover, PLACEHOLDER_COVER } from '../lib/cover';
 
 const STATUS_LABEL: Record<Series['status'], string> = {
   reading: 'Reading',
@@ -19,7 +19,7 @@ interface Props {
 }
 
 export default function SeriesCard({ series, onIncrement, onDecrement, onEdit, onDelete }: Props) {
-  const [src, setSrc] = useState('');
+  const [src, setSrc] = useState(PLACEHOLDER_COVER);
 
   useEffect(() => {
     const { src, revoke } = resolveCover(series);
