@@ -18,7 +18,10 @@ export default function App() {
   const [importing, setImporting] = useState(false);
 
   useEffect(() => {
-    db.getAll().then(setSeries).catch(() => setError('Failed to load your data.'));
+    db.getAll()
+      // Backfill fields added after a record was first stored, so older data stays safe.
+      .then((list) => setSeries(list.map((s) => ({ ...s, originalTitle: s.originalTitle ?? '' }))))
+      .catch(() => setError('Failed to load your data.'));
   }, []);
 
   async function persist(next: Series) {
@@ -89,7 +92,9 @@ export default function App() {
     const filtered = series.filter(
       (s) =>
         (statusFilter === 'all' || s.status === statusFilter) &&
-        (q === '' || s.title.toLowerCase().includes(q)),
+        (q === '' ||
+          s.title.toLowerCase().includes(q) ||
+          s.originalTitle.toLowerCase().includes(q)),
     );
     const sorted = [...filtered];
     if (sort === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title));

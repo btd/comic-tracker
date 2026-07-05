@@ -85,6 +85,7 @@ export async function deserialize(json: string): Promise<Series[]> {
     const series: Series = {
       id: requireStr(r.id ?? crypto.randomUUID(), 'id'),
       title: requireStr(r.title, 'title'),
+      originalTitle: str(r.originalTitle, 'originalTitle'),
       author: str(r.author, 'author'),
       link: str(r.link, 'link'),
       linkLabel: str(r.linkLabel, 'linkLabel'),

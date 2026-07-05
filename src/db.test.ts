@@ -5,7 +5,7 @@ import type { Series } from './types';
 
 function make(id: string, over: Partial<Series> = {}): Series {
   return {
-    id, title: `T${id}`, author: '', link: '', linkLabel: '',
+    id, title: `T${id}`, originalTitle: '', author: '', link: '', linkLabel: '',
     lastChapter: 0, status: 'reading', coverType: 'none', coverUrl: '',
     createdAt: 1, updatedAt: 1, ...over,
   };

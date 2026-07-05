@@ -15,6 +15,7 @@ interface Props {
 
 export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
   const [title, setTitle] = useState(initial?.title ?? '');
+  const [originalTitle, setOriginalTitle] = useState(initial?.originalTitle ?? '');
   const [author, setAuthor] = useState(initial?.author ?? '');
   const [link, setLink] = useState(initial?.link ?? '');
   const [linkLabel, setLinkLabel] = useState(initial?.linkLabel ?? '');
@@ -53,6 +54,7 @@ export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
     onSave({
       id: initial?.id ?? crypto.randomUUID(),
       title: trimmed,
+      originalTitle: originalTitle.trim(),
       author: author.trim(),
       link: link.trim(),
       linkLabel: linkLabel.trim(),
@@ -75,6 +77,10 @@ export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
         </div>
         <div className="modal-body">
           <label>Title*<input value={title} onChange={(e) => setTitle(e.target.value)} autoFocus /></label>
+          <label>Original title
+            <input value={originalTitle} placeholder="원제 / 原題 (optional)"
+              onChange={(e) => setOriginalTitle(e.target.value)} />
+          </label>
           <label>Author<input value={author} onChange={(e) => setAuthor(e.target.value)} /></label>
           <label>Link<input value={link} placeholder="https://..." onChange={(e) => setLink(e.target.value)} /></label>
           <label>Platform label<input value={linkLabel} placeholder="Webtoons" onChange={(e) => setLinkLabel(e.target.value)} /></label>

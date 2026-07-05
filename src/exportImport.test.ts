@@ -4,7 +4,7 @@ import type { Series } from './types';
 
 function make(over: Partial<Series> = {}): Series {
   return {
-    id: 'a', title: 'Solo Leveling', author: 'Chugong', link: '', linkLabel: '',
+    id: 'a', title: 'Solo Leveling', originalTitle: '나 혼자만 레벨업', author: 'Chugong', link: '', linkLabel: '',
     lastChapter: 12, status: 'reading', coverType: 'none', coverUrl: '',
     createdAt: 1, updatedAt: 2, ...over,
   };
@@ -14,7 +14,9 @@ describe('exportImport', () => {
   it('round-trips a plain series through serialize/deserialize', async () => {
     const out = await deserialize(await serialize([make()]));
     expect(out).toHaveLength(1);
-    expect(out[0]).toMatchObject({ id: 'a', title: 'Solo Leveling', lastChapter: 12 });
+    expect(out[0]).toMatchObject({
+      id: 'a', title: 'Solo Leveling', originalTitle: '나 혼자만 레벨업', lastChapter: 12,
+    });
   });
 
   it('round-trips a file cover as blob -> base64 -> blob', async () => {
@@ -39,6 +41,15 @@ describe('exportImport', () => {
     const out = await deserialize(JSON.stringify(env));
     expect(out[0].coverBlob).toBeInstanceOf(Blob);
     expect(await out[0].coverBlob!.text()).toBe('<svg></svg>');
+  });
+
+  it('defaults originalTitle to empty for older exports without the field', async () => {
+    const env = {
+      app: 'comic-tracker', version: 1, exportedAt: 1,
+      series: [{ id: 'a', title: 'Old Series' }],
+    };
+    const out = await deserialize(JSON.stringify(env));
+    expect(out[0].originalTitle).toBe('');
   });
 
   it('ignores unknown extra fields (forward compatible)', async () => {

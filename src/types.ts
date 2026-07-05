@@ -4,6 +4,8 @@ export type CoverType = 'url' | 'file' | 'none';
 export interface Series {
   id: string;
   title: string;
+  /** Optional original-language title (e.g. Korean/Japanese). Empty string if unused. */
+  originalTitle: string;
   author: string;
   link: string;
   linkLabel: string;

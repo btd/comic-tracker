@@ -37,6 +37,7 @@ export default function Toolbar(p: Props) {
         <option value="title">Title A–Z</option>
         <option value="chapter">Chapter high→low</option>
       </select>
+      <span className="spacer" />
       <button className="primary-btn" onClick={p.onAdd}><Plus size={16} /> Add</button>
       <button className="text-btn" onClick={p.onExport}><Download size={16} /> Export</button>
       <button className="text-btn" onClick={p.onImport}><Upload size={16} /> Import</button>

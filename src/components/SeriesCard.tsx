@@ -31,6 +31,14 @@ export default function SeriesCard({ series, onIncrement, onDecrement, onEdit, o
     <div className="card">
       <div className="card-cover">
         <img src={src} alt={series.title} />
+        <div className="cover-actions">
+          <button className="icon-btn" aria-label="Edit series" onClick={() => onEdit(series)}>
+            <Pencil size={15} />
+          </button>
+          <button className="icon-btn danger" aria-label="Delete series" onClick={() => onDelete(series)}>
+            <Trash2 size={15} />
+          </button>
+        </div>
       </div>
       <div className="card-body">
         <div className="card-title">
@@ -42,6 +50,7 @@ export default function SeriesCard({ series, onIncrement, onDecrement, onEdit, o
             series.title
           )}
         </div>
+        {series.originalTitle && <div className="card-original">{series.originalTitle}</div>}
         {series.author && <div className="card-author">{series.author}</div>}
         <div className="card-meta">
           <span className={`badge badge-${series.status}`}>{STATUS_LABEL[series.status]}</span>
@@ -52,18 +61,13 @@ export default function SeriesCard({ series, onIncrement, onDecrement, onEdit, o
             onClick={() => onDecrement(series.id)} disabled={series.lastChapter <= 0}>
             <Minus size={18} />
           </button>
-          <span className="chapter-num">Ch. {series.lastChapter}</span>
+          <span className="chapter-num">
+            <small>Chapter</small>
+            <b>{series.lastChapter}</b>
+          </span>
           <button className="icon-btn primary" aria-label="Increment chapter"
             onClick={() => onIncrement(series.id)}>
             <Plus size={18} />
-          </button>
-        </div>
-        <div className="card-actions">
-          <button className="text-btn" onClick={() => onEdit(series)}>
-            <Pencil size={14} /> Edit
-          </button>
-          <button className="text-btn danger" onClick={() => onDelete(series)}>
-            <Trash2 size={14} /> Delete
           </button>
         </div>
       </div>
