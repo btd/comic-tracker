@@ -1,3 +1,11 @@
 node_modules
 dist
 .DS_Store
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+
+# Test/debug artifacts
+.playwright-mcp/
+current-design.png
+redesign.png
