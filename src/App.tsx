@@ -17,11 +17,14 @@ export default function App() {
   const [editing, setEditing] = useState<Series | null | undefined>(undefined); // undefined = closed
   const [importing, setImporting] = useState(false);
 
+  // Load from IndexedDB, backfilling fields added after a record was first stored.
+  async function reload() {
+    const list = await db.getAll();
+    setSeries(list.map((s) => ({ ...s, originalTitle: s.originalTitle ?? '' })));
+  }
+
   useEffect(() => {
-    db.getAll()
-      // Backfill fields added after a record was first stored, so older data stays safe.
-      .then((list) => setSeries(list.map((s) => ({ ...s, originalTitle: s.originalTitle ?? '' }))))
-      .catch(() => setError('Failed to load your data.'));
+    reload().catch(() => setError('Failed to load your data.'));
   }, []);
 
   async function persist(next: Series) {
@@ -36,6 +39,8 @@ export default function App() {
       await db.put(next);
     } catch {
       setError('Failed to save. Your change may not persist.');
+      // Reconcile the UI with what actually persisted.
+      await reload().catch(() => {});
     }
   }
 
@@ -53,6 +58,7 @@ export default function App() {
       await db.remove(target.id);
     } catch {
       setError('Failed to delete.');
+      await reload().catch(() => {});
     }
   }
 
@@ -84,6 +90,8 @@ export default function App() {
       setImporting(false);
     } catch {
       setError('Failed to import.');
+      // A partial write (e.g. cleared then bulkPut failed) can desync the UI.
+      await reload().catch(() => {});
     }
   }
 
