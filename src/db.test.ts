@@ -7,7 +7,7 @@ function make(id: string, over: Partial<Series> = {}): Series {
   return {
     id, title: `T${id}`, originalTitle: '', author: '', link: '', linkLabel: '',
     lastChapter: 0, status: 'reading', coverType: 'none', coverUrl: '',
-    createdAt: 1, updatedAt: 1, ...over,
+    createdAt: 1, updatedAt: 1, pinned: false, ...over,
   };
 }
 
@@ -45,5 +45,17 @@ describe('db', () => {
     expect(await getAll()).toHaveLength(2);
     await clear();
     expect(await getAll()).toHaveLength(0);
+  });
+
+  it('meta defaults then persists a patch', async () => {
+    const { getMeta, setMeta } = await import('./db');
+    expect((await getMeta()).lastBackupAt).toBe(0);
+    await setMeta({ lastBackupAt: 12345 });
+    expect((await getMeta()).lastBackupAt).toBe(12345);
+  });
+
+  it('series store still works after v2 upgrade', async () => {
+    await put(make('z', { pinned: true }));
+    expect((await get('z'))?.pinned).toBe(true);
   });
 });
