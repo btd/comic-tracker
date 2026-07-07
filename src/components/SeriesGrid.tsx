@@ -9,6 +9,7 @@ interface Props {
   onDecrement: (id: string) => void;
   onEdit: (series: Series) => void;
   onDelete: (series: Series) => void;
+  onTogglePin: (id: string) => void;
 }
 
 export default function SeriesGrid({ series, totalCount, ...handlers }: Props) {

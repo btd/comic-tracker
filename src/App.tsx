@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as db from './db';
 import { serialize } from './exportImport';
 import type { Series } from './types';
@@ -6,6 +6,9 @@ import Toolbar, { type SortKey, type StatusFilter } from './components/Toolbar';
 import SeriesGrid from './components/SeriesGrid';
 import SeriesFormModal from './components/SeriesFormModal';
 import ImportDialog from './components/ImportDialog';
+import Toast, { type ToastState } from './components/Toast';
+import PWAUpdatePrompt from './components/PWAUpdatePrompt';
+import { relativeTime } from './lib/relativeTime';
 import './App.css';
 
 export default function App() {
@@ -16,15 +19,34 @@ export default function App() {
   const [sort, setSort] = useState<SortKey>('updated');
   const [editing, setEditing] = useState<Series | null | undefined>(undefined); // undefined = closed
   const [importing, setImporting] = useState(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
+  const [persistent, setPersistent] = useState<boolean | null>(null);
+  const [lastBackupAt, setLastBackupAt] = useState(0);
+  const searchRef = useRef<HTMLInputElement | null>(null);
 
   // Load from IndexedDB, backfilling fields added after a record was first stored.
   async function reload() {
     const list = await db.getAll();
-    setSeries(list.map((s) => ({ ...s, originalTitle: s.originalTitle ?? '' })));
+    setSeries(
+      list.map((s) => ({ ...s, originalTitle: s.originalTitle ?? '', pinned: s.pinned ?? false })),
+    );
   }
 
   useEffect(() => {
     reload().catch(() => setError('Failed to load your data.'));
+    db.getMeta().then((m) => setLastBackupAt(m.lastBackupAt)).catch(() => {});
+    navigator.storage?.persist?.().then((p) => setPersistent(p)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   async function persist(next: Series) {
@@ -51,11 +73,41 @@ export default function App() {
     void persist({ ...found, lastChapter, updatedAt: Date.now() });
   }
 
+  function togglePin(id: string) {
+    const found = series.find((s) => s.id === id);
+    if (!found) return;
+    void persist({ ...found, pinned: !found.pinned, updatedAt: Date.now() });
+  }
+
+  function quickAdd(title: string) {
+    const now = Date.now();
+    void persist({
+      id: crypto.randomUUID(),
+      title,
+      originalTitle: '',
+      author: '',
+      link: '',
+      linkLabel: '',
+      lastChapter: 0,
+      status: 'reading',
+      coverType: 'none',
+      coverUrl: '',
+      createdAt: now,
+      updatedAt: now,
+      pinned: false,
+    });
+  }
+
   async function handleDelete(target: Series) {
     if (!confirm(`Delete "${target.title}"?`)) return;
     setSeries((prev) => prev.filter((s) => s.id !== target.id));
     try {
       await db.remove(target.id);
+      setToast({
+        message: `Deleted "${target.title}".`,
+        actionLabel: 'Undo',
+        onAction: () => void persist(target),
+      });
     } catch {
       setError('Failed to delete.');
       await reload().catch(() => {});
@@ -71,14 +123,29 @@ export default function App() {
     a.download = `comic-tracker-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    const now = Date.now();
+    setLastBackupAt(now);
+    await db.setMeta({ lastBackupAt: now }).catch(() => {});
   }
 
   async function handleImport(imported: Series[], mode: 'merge' | 'replace') {
+    const snapshot = series;
     try {
       if (mode === 'replace') {
         await db.clear();
         await db.bulkPut(imported);
         setSeries(imported);
+        setToast({
+          message: `Replaced with ${imported.length} series.`,
+          actionLabel: 'Undo',
+          onAction: () => {
+            void (async () => {
+              await db.clear();
+              await db.bulkPut(snapshot);
+              setSeries(snapshot);
+            })();
+          },
+        });
       } else {
         await db.bulkPut(imported);
         setSeries((prev) => {
@@ -108,8 +175,12 @@ export default function App() {
     if (sort === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title));
     else if (sort === 'chapter') sorted.sort((a, b) => b.lastChapter - a.lastChapter);
     else sorted.sort((a, b) => b.updatedAt - a.updatedAt);
+    sorted.sort((a, b) => Number(b.pinned) - Number(a.pinned)); // stable: pinned first
     return sorted;
   }, [series, search, statusFilter, sort]);
+
+  const backupStale =
+    series.length > 0 && (lastBackupAt === 0 || Date.now() - lastBackupAt > 7 * 86_400_000);
 
   return (
     <div className="app">
@@ -117,14 +188,27 @@ export default function App() {
         search={search} statusFilter={statusFilter} sort={sort}
         onSearch={setSearch} onStatusFilter={setStatusFilter} onSort={setSort}
         onAdd={() => setEditing(null)} onExport={handleExport} onImport={() => setImporting(true)}
+        onQuickAdd={quickAdd} searchRef={searchRef}
       />
       {error && <div className="error-banner" onClick={() => setError('')}>{error} (click to dismiss)</div>}
+      {backupStale && (
+        <div className="nudge-banner">
+          <span>
+            {lastBackupAt === 0
+              ? 'You have never backed up your list.'
+              : `Last backup ${relativeTime(lastBackupAt)}.`}
+            {persistent === false && ' Browser storage is not marked persistent — export to be safe.'}
+          </span>
+          <button className="toast-action" onClick={handleExport}>Export now</button>
+        </div>
+      )}
       <SeriesGrid
         series={visible} totalCount={series.length}
         onIncrement={(id) => changeChapter(id, 1)}
         onDecrement={(id) => changeChapter(id, -1)}
         onEdit={(s) => setEditing(s)}
         onDelete={handleDelete}
+        onTogglePin={togglePin}
       />
       {editing !== undefined && (
         <SeriesFormModal
@@ -136,6 +220,8 @@ export default function App() {
       {importing && (
         <ImportDialog onImport={handleImport} onClose={() => setImporting(false)} />
       )}
+      <Toast toast={toast} onDismiss={() => setToast(null)} />
+      <PWAUpdatePrompt />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Plus, Minus, Pencil, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, Minus, Pencil, Trash2, ExternalLink, Star } from 'lucide-react';
 import type { Series } from '../types';
 import { resolveCover, PLACEHOLDER_COVER } from '../lib/cover';
+import { relativeTime } from '../lib/relativeTime';
 
 const STATUS_LABEL: Record<Series['status'], string> = {
   reading: 'Reading',
@@ -16,9 +17,12 @@ interface Props {
   onDecrement: (id: string) => void;
   onEdit: (series: Series) => void;
   onDelete: (series: Series) => void;
+  onTogglePin: (id: string) => void;
 }
 
-export default function SeriesCard({ series, onIncrement, onDecrement, onEdit, onDelete }: Props) {
+export default function SeriesCard({
+  series, onIncrement, onDecrement, onEdit, onDelete, onTogglePin,
+}: Props) {
   const [src, setSrc] = useState(PLACEHOLDER_COVER);
 
   useEffect(() => {
@@ -28,10 +32,25 @@ export default function SeriesCard({ series, onIncrement, onDecrement, onEdit, o
   }, [series]);
 
   return (
-    <div className="card">
+    <div
+      className="card"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === '+' || e.key === '=') { e.preventDefault(); onIncrement(series.id); }
+        else if (e.key === '-') { e.preventDefault(); onDecrement(series.id); }
+      }}
+    >
       <div className="card-cover">
         <img src={src} alt={series.title} />
         <div className="cover-actions">
+          <button
+            className={`icon-btn${series.pinned ? ' pinned' : ''}`}
+            aria-label={series.pinned ? 'Unpin series' : 'Pin series'}
+            aria-pressed={series.pinned}
+            onClick={() => onTogglePin(series.id)}
+          >
+            <Star size={15} fill={series.pinned ? 'currentColor' : 'none'} />
+          </button>
           <button className="icon-btn" aria-label="Edit series" onClick={() => onEdit(series)}>
             <Pencil size={15} />
           </button>
@@ -56,6 +75,7 @@ export default function SeriesCard({ series, onIncrement, onDecrement, onEdit, o
           <span className={`badge badge-${series.status}`}>{STATUS_LABEL[series.status]}</span>
           {series.linkLabel && <span className="platform">{series.linkLabel}</span>}
         </div>
+        <div className="card-updated">Updated {relativeTime(series.updatedAt)}</div>
         <div className="card-chapter">
           <button className="icon-btn" aria-label="Decrement chapter"
             onClick={() => onDecrement(series.id)} disabled={series.lastChapter <= 0}>

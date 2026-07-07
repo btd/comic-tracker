@@ -1,3 +1,5 @@
+import '@testing-library/jest-dom/vitest';
+
 // Vitest setup: jsdom's Blob implementation is missing the async reader helpers
 // (`Blob.prototype.text` / `arrayBuffer`) that browsers provide. Polyfill them on
 // top of jsdom's own FileReader so blob round-trip tests behave like a real browser.

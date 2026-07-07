@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import type { Series, Status } from '../types';
 import { STATUSES } from '../types';
+import { makeThumbnail } from '../lib/thumbnail';
 
 const STATUS_LABEL: Record<Status, string> = {
   reading: 'Reading', completed: 'Completed', 'on-hold': 'On hold', dropped: 'Dropped',
@@ -65,6 +66,7 @@ export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
       coverBlob: coverMode === 'file' ? coverBlob : undefined,
       createdAt: initial?.createdAt ?? now,
       updatedAt: now,
+      pinned: initial?.pinned ?? false,
     });
   }
 
@@ -102,7 +104,10 @@ export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
               <input value={coverUrl} placeholder="https://.../cover.jpg" onChange={(e) => setCoverUrl(e.target.value)} />
             ) : (
               <input type="file" accept="image/*"
-                onChange={(e) => setCoverBlob(e.target.files?.[0] ?? coverBlob)} />
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setCoverBlob(await makeThumbnail(file));
+                }} />
             )}
             {preview && <img className="cover-preview" src={preview} alt="cover preview" />}
           </fieldset>

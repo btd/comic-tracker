@@ -16,9 +16,17 @@ export interface Series {
   coverBlob?: Blob;
   createdAt: number;
   updatedAt: number;
+  pinned: boolean;
 }
 
 export const STATUSES: Status[] = ['reading', 'completed', 'on-hold', 'dropped'];
+
+export interface Meta {
+  /** epoch ms of last successful export; 0 = never backed up */
+  lastBackupAt: number;
+}
+
+export const DEFAULT_META: Meta = { lastBackupAt: 0 };
 
 /** A Series as it appears in an export file: blob replaced by a base64 data URL. */
 export interface SeriesExport extends Omit<Series, 'coverBlob'> {
@@ -27,7 +35,7 @@ export interface SeriesExport extends Omit<Series, 'coverBlob'> {
 
 export interface ExportEnvelope {
   app: 'comic-tracker';
-  version: 1;
+  version: 2;
   exportedAt: number;
   series: SeriesExport[];
 }

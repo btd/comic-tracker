@@ -308,6 +308,9 @@ button:active {
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+  /* Pin the status/updated/chapter group to the bottom so steppers align across a row. */
+  margin-top: auto;
+  padding-top: 4px;
 }
 
 .badge {
@@ -640,4 +643,94 @@ button:active {
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
+}
+
+/* ---------- v2 additions ---------- */
+
+/* Pinned star */
+.icon-btn.pinned { color: var(--warn); border-color: var(--warn); }
+
+/* Relative updated time */
+.card-updated { font-size: 11px; color: var(--text-faint); }
+
+/* Quick add */
+.quick-add { flex: 1 1 160px; max-width: 220px; }
+.quick-add input {
+  width: 100%; font-family: inherit; font-size: 14px; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 999px; padding: 9px 15px;
+}
+.quick-add input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+/* Card keyboard focus */
+.card:focus-visible { outline: 2px solid var(--accent-hi); outline-offset: 3px; }
+
+/* Nudge banner */
+.nudge-banner {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: rgba(255, 179, 64, 0.12); border: 1px solid rgba(255, 179, 64, 0.4);
+  color: #ffd79a; padding: 11px 15px; border-radius: 12px; margin-bottom: 18px; font-size: 14px;
+}
+
+/* Toasts (Toast component + PWA prompt) */
+.toast, .pwa-toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px; z-index: 60;
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border-strong); border-radius: 12px;
+  padding: 10px 12px 10px 16px; box-shadow: var(--shadow-lift);
+  animation: modal-in 0.28s var(--ease);
+}
+.pwa-toast { bottom: 76px; }
+.toast-action {
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 8px; padding: 6px 12px; font-weight: 600;
+}
+.toast-close {
+  background: transparent; border: none; color: var(--text-dim);
+  display: inline-flex; padding: 4px; border-radius: 6px; font-size: 16px; line-height: 1;
+}
+.toast-close:hover { color: var(--text); background: var(--surface-hover); }
+
+/* ---------- Responsive ---------- */
+
+/* Phone — Pixel 6 (412px) and similar, up to 600px */
+@media (max-width: 600px) {
+  .app { padding: 0 12px 64px; }
+
+  .toolbar { gap: 8px; padding: 12px 0; }
+  .app-title { flex: 1 1 100%; font-size: 22px; }
+  .search-box { flex: 1 1 100%; max-width: none; order: 1; }
+  .quick-add { flex: 1 1 100%; max-width: none; order: 2; }
+  .toolbar select { order: 3; flex: 1 1 46%; }
+  .spacer { display: none; }
+  .toolbar > .primary-btn,
+  .toolbar > .text-btn { order: 4; flex: 1 1 30%; justify-content: center; }
+
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .card-title { font-size: 15px; }
+
+  .toast, .pwa-toast {
+    left: 12px; right: 12px; transform: none; bottom: 16px;
+    justify-content: space-between;
+  }
+  .pwa-toast { bottom: 84px; }
+
+  .modal { max-width: none; }
+}
+
+/* Tablet — iPad 10.9" portrait (820px). */
+@media (min-width: 601px) and (max-width: 1024px) {
+  .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 18px; }
+}
+
+/* Touch devices: cover actions always visible — there's no hover. */
+@media (hover: none) {
+  .cover-actions { opacity: 1; transform: none; }
+}
+
+/* Coarse pointers: larger tap targets */
+@media (pointer: coarse) {
+  .icon-btn { padding: 10px; }
+  .card-chapter .icon-btn { padding: 10px 12px; }
 }

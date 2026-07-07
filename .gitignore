@@ -5,7 +5,6 @@ dist
 vite.config.js
 vite.config.d.ts
 
-# Test/debug artifacts
+# Test/debug artifacts (screenshots captured during browser verification)
 .playwright-mcp/
-current-design.png
-redesign.png
+/*.png
