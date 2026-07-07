@@ -308,6 +308,9 @@ button:active {
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+  /* Pin the status/updated/chapter group to the bottom so steppers align across a row. */
+  margin-top: auto;
+  padding-top: 4px;
 }
 
 .badge {
