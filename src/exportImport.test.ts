@@ -6,7 +6,7 @@ function make(over: Partial<Series> = {}): Series {
   return {
     id: 'a', title: 'Solo Leveling', originalTitle: '나 혼자만 레벨업', author: 'Chugong', link: '', linkLabel: '',
     lastChapter: 12, status: 'reading', coverType: 'none', coverUrl: '',
-    createdAt: 1, updatedAt: 2, ...over,
+    createdAt: 1, updatedAt: 2, pinned: false, ...over,
   };
 }
 
@@ -17,6 +17,23 @@ describe('exportImport', () => {
     expect(out[0]).toMatchObject({
       id: 'a', title: 'Solo Leveling', originalTitle: '나 혼자만 레벨업', lastChapter: 12,
     });
+  });
+
+  it('round-trips pinned in a v2 export', async () => {
+    const json = await serialize([make({ pinned: true })]);
+    expect(JSON.parse(json).version).toBe(2);
+    const out = await deserialize(json);
+    expect(out[0].pinned).toBe(true);
+  });
+
+  it('imports a v1 file and defaults pinned to false', async () => {
+    const v1 = {
+      app: 'comic-tracker', version: 1, exportedAt: 1,
+      series: [{ id: 'a', title: 'Old', originalTitle: '', author: '' }],
+    };
+    const out = await deserialize(JSON.stringify(v1));
+    expect(out[0].pinned).toBe(false);
+    expect(out[0].title).toBe('Old');
   });
 
   it('round-trips a file cover as blob -> base64 -> blob', async () => {
