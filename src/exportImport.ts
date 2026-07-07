@@ -73,7 +73,8 @@ export async function deserialize(json: string): Promise<Series[]> {
   } catch {
     throw new Error('Import failed: file is not valid JSON');
   }
-  const env = parsed as Partial<ExportEnvelope>;
+  // Parsed input is arbitrary JSON, not a trusted envelope — read fields as unknown.
+  const env = parsed as { app?: unknown; version?: unknown; series?: unknown };
   if (env?.app !== APP) throw new Error('Import failed: this is not a comic-tracker export file');
   if (env.version !== 1 && env.version !== 2) {
     throw new Error(`Import failed: unsupported export version ${String(env.version)}`);
