@@ -125,6 +125,17 @@ The upgrade is additive and must not touch existing `series` data.
 
 ---
 
+## 5b. Responsive / Mobile
+
+Target devices: **Pixel 6** (412×915 CSS px, portrait phone), **iPad 10th gen / 10.9"**
+(820×1180 portrait, 1180 landscape), and **desktop**. CSS-only (no component changes):
+- Phone `≤600px`: toolbar reflows to stacked rows, 2-column card grid, full-width toasts,
+  near-full-screen modal.
+- Tablet `601–1024px`: denser auto-fill grid (min 180px).
+- Desktop `>1024px`: unchanged.
+- `@media (hover: none)` shows cover action buttons (pin/edit/delete) without hover;
+  `@media (pointer: coarse)` enlarges tap targets.
+
 ## 6. UX
 
 - **Pin/favorite:** star toggle (lucide `Star`/`StarOff`) on each card. Sorting always
