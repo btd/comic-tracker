@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://btd.github.io/comic-tracker/export-schema.json",
+  "title": "Comic Tracker Export",
+  "description": "Self-contained backup file produced by Comic Tracker's Export button and consumed by Import.",
+  "type": "object",
+  "required": ["app", "version", "series"],
+  "properties": {
+    "app": {
+      "const": "comic-tracker",
+      "description": "Fixed marker identifying the file as a Comic Tracker export. Import rejects any other value."
+    },
+    "version": {
+      "type": "integer",
+      "enum": [1, 2],
+      "description": "Export format version. Writer emits 2; reader accepts 1 and 2. Any other value is rejected."
+    },
+    "exportedAt": {
+      "type": "integer",
+      "description": "Epoch milliseconds when the file was written. Informational; ignored on import."
+    },
+    "series": {
+      "type": "array",
+      "description": "The tracked titles.",
+      "items": { "$ref": "#/$defs/series" }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "series": {
+      "type": "object",
+      "description": "One tracked manga/manhwa. On import, `title` is required and non-empty; `id` is auto-generated when absent but must be non-empty if present. Every other field has a safe default, and unknown fields are ignored.",
+      "required": ["title"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable unique identifier (a UUID for app-created records). Used to de-duplicate on merge import. If the field is absent, a UUID is generated on import; if present it must be non-empty (an empty string is rejected)."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Primary (typically English) title. Required and non-empty."
+        },
+        "originalTitle": {
+          "type": "string",
+          "default": "",
+          "description": "Optional original-language title (e.g. Korean/Japanese)."
+        },
+        "author": { "type": "string", "default": "" },
+        "link": {
+          "type": "string",
+          "default": "",
+          "description": "URL to the series page. May be empty."
+        },
+        "linkLabel": {
+          "type": "string",
+          "default": "",
+          "description": "Optional display label for the link, e.g. \"Webtoons\"."
+        },
+        "lastChapter": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Last chapter read. Negative values are clamped to 0 on import."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["reading", "completed", "on-hold", "dropped"],
+          "default": "reading",
+          "description": "Reading status. Unrecognized values fall back to \"reading\"."
+        },
+        "coverType": {
+          "type": "string",
+          "enum": ["url", "file", "none"],
+          "default": "none",
+          "description": "How the cover is stored: \"url\" uses coverUrl; \"file\" uses coverDataUrl; \"none\" shows a placeholder. Unrecognized values fall back to \"none\"."
+        },
+        "coverUrl": {
+          "type": "string",
+          "default": "",
+          "description": "Direct image URL. Used when coverType is \"url\"."
+        },
+        "coverDataUrl": {
+          "type": "string",
+          "description": "Base64 data URL of an uploaded cover image, e.g. \"data:image/webp;base64,...\". Present only when coverType is \"file\". This is what makes an export self-contained (no external image dependency). Decoded back into a stored image on import.",
+          "pattern": "^data:"
+        },
+        "createdAt": {
+          "type": "integer",
+          "description": "Epoch milliseconds the record was created. Defaults to import time if missing or 0."
+        },
+        "updatedAt": {
+          "type": "integer",
+          "description": "Epoch milliseconds the record last changed. Defaults to import time if missing or 0."
+        },
+        "pinned": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the series is pinned to the top of the list. Absent in version 1 files; defaults to false."
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}
