@@ -22,8 +22,9 @@ export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
   const [linkLabel, setLinkLabel] = useState(initial?.linkLabel ?? '');
   const [lastChapter, setLastChapter] = useState(String(initial?.lastChapter ?? 0));
   const [status, setStatus] = useState<Status>(initial?.status ?? 'reading');
+  // Default to file upload; keep URL mode only when editing an existing URL cover.
   const [coverMode, setCoverMode] = useState<'url' | 'file'>(
-    initial?.coverType === 'file' ? 'file' : 'url',
+    initial?.coverType === 'url' ? 'url' : 'file',
   );
   const [coverUrl, setCoverUrl] = useState(initial?.coverUrl ?? '');
   const [coverBlob, setCoverBlob] = useState<Blob | undefined>(initial?.coverBlob);
