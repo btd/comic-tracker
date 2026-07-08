@@ -5,8 +5,14 @@ Comic Tracker's **Export** button downloads a single self-contained JSON file
 holds your entire list, with uploaded cover images inlined as base64 so it is portable
 across machines and browsers with no external dependencies.
 
-A machine-readable JSON Schema (Draft 2020-12) lives alongside this doc at
-[`export-schema.json`](./export-schema.json).
+A machine-readable JSON Schema (Draft 2020-12) is published at a stable URL and shipped
+with the app:
+
+- **Hosted:** <https://btd.github.io/comic-tracker/export-schema.json>
+- **In the repo:** [`public/export-schema.json`](../public/export-schema.json) (copied to
+  the site root at build time).
+
+The schema's `$id` matches the hosted URL, so validators can resolve it by reference.
 
 ## Envelope
 
