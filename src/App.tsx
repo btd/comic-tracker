@@ -79,25 +79,6 @@ export default function App() {
     void persist({ ...found, pinned: !found.pinned, updatedAt: Date.now() });
   }
 
-  function quickAdd(title: string) {
-    const now = Date.now();
-    void persist({
-      id: crypto.randomUUID(),
-      title,
-      originalTitle: '',
-      author: '',
-      link: '',
-      linkLabel: '',
-      lastChapter: 0,
-      status: 'reading',
-      coverType: 'none',
-      coverUrl: '',
-      createdAt: now,
-      updatedAt: now,
-      pinned: false,
-    });
-  }
-
   async function handleDelete(target: Series) {
     if (!confirm(`Delete "${target.title}"?`)) return;
     setSeries((prev) => prev.filter((s) => s.id !== target.id));
@@ -188,7 +169,7 @@ export default function App() {
         search={search} statusFilter={statusFilter} sort={sort}
         onSearch={setSearch} onStatusFilter={setStatusFilter} onSort={setSort}
         onAdd={() => setEditing(null)} onExport={handleExport} onImport={() => setImporting(true)}
-        onQuickAdd={quickAdd} searchRef={searchRef}
+        searchRef={searchRef}
       />
       {error && <div className="error-banner" onClick={() => setError('')}>{error} (click to dismiss)</div>}
       {backupStale && (

@@ -261,6 +261,8 @@ button:active {
   display: flex;
   flex-direction: column;
   gap: 9px;
+  /* Fill the card's stretched height so the bottom group can be pushed down. */
+  flex: 1 1 auto;
 }
 
 .card-title {
@@ -653,15 +655,6 @@ button:active {
 /* Relative updated time */
 .card-updated { font-size: 11px; color: var(--text-faint); }
 
-/* Quick add */
-.quick-add { flex: 1 1 160px; max-width: 220px; }
-.quick-add input {
-  width: 100%; font-family: inherit; font-size: 14px; color: var(--text);
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 999px; padding: 9px 15px;
-}
-.quick-add input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-
 /* Card keyboard focus */
 .card:focus-visible { outline: 2px solid var(--accent-hi); outline-offset: 3px; }
 
@@ -701,7 +694,6 @@ button:active {
   .toolbar { gap: 8px; padding: 12px 0; }
   .app-title { flex: 1 1 100%; font-size: 22px; }
   .search-box { flex: 1 1 100%; max-width: none; order: 1; }
-  .quick-add { flex: 1 1 100%; max-width: none; order: 2; }
   .toolbar select { order: 3; flex: 1 1 46%; }
   .spacer { display: none; }
   .toolbar > .primary-btn,

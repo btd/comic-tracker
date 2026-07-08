@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Plus, Search, Download, Upload } from 'lucide-react';
 import type { Status } from '../types';
 
@@ -15,30 +14,7 @@ interface Props {
   onAdd: () => void;
   onExport: () => void;
   onImport: () => void;
-  onQuickAdd: (title: string) => void;
   searchRef: React.RefObject<HTMLInputElement | null>;
-}
-
-function QuickAdd({ onQuickAdd }: { onQuickAdd: (t: string) => void }) {
-  const [value, setValue] = useState('');
-  return (
-    <form
-      className="quick-add"
-      onSubmit={(e) => {
-        e.preventDefault();
-        const t = value.trim();
-        if (!t) return;
-        onQuickAdd(t);
-        setValue('');
-      }}
-    >
-      <input
-        placeholder="Quick add title…"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-      />
-    </form>
-  );
 }
 
 export default function Toolbar(p: Props) {
@@ -50,7 +26,6 @@ export default function Toolbar(p: Props) {
         <input ref={p.searchRef} placeholder="Search title..." value={p.search}
           onChange={(e) => p.onSearch(e.target.value)} />
       </div>
-      <QuickAdd onQuickAdd={p.onQuickAdd} />
       <select value={p.statusFilter} onChange={(e) => p.onStatusFilter(e.target.value as StatusFilter)}>
         <option value="all">All statuses</option>
         <option value="reading">Reading</option>
