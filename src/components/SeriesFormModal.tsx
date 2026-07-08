@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import type { Series, Status } from '../types';
 import { STATUSES } from '../types';
 import { makeThumbnail } from '../lib/thumbnail';
+import StarRating from './StarRating';
 
 const STATUS_LABEL: Record<Status, string> = {
   reading: 'Reading', completed: 'Completed', 'on-hold': 'On hold', dropped: 'Dropped',
@@ -19,8 +20,8 @@ export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
   const [originalTitle, setOriginalTitle] = useState(initial?.originalTitle ?? '');
   const [author, setAuthor] = useState(initial?.author ?? '');
   const [link, setLink] = useState(initial?.link ?? '');
-  const [linkLabel, setLinkLabel] = useState(initial?.linkLabel ?? '');
   const [lastChapter, setLastChapter] = useState(String(initial?.lastChapter ?? 0));
+  const [rating, setRating] = useState(initial?.rating ?? 0);
   const [status, setStatus] = useState<Status>(initial?.status ?? 'reading');
   // Default to file upload; keep URL mode only when editing an existing URL cover.
   const [coverMode, setCoverMode] = useState<'url' | 'file'>(
@@ -59,8 +60,8 @@ export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
       originalTitle: originalTitle.trim(),
       author: author.trim(),
       link: link.trim(),
-      linkLabel: linkLabel.trim(),
       lastChapter: chapter,
+      rating,
       status,
       coverType,
       coverUrl: coverMode === 'url' ? coverUrl.trim() : '',
@@ -86,10 +87,13 @@ export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
           </label>
           <label>Author<input value={author} onChange={(e) => setAuthor(e.target.value)} /></label>
           <label>Link<input value={link} placeholder="https://..." onChange={(e) => setLink(e.target.value)} /></label>
-          <label>Platform label<input value={linkLabel} placeholder="Webtoons" onChange={(e) => setLinkLabel(e.target.value)} /></label>
           <label>Last chapter
             <input type="number" min={0} value={lastChapter} onChange={(e) => setLastChapter(e.target.value)} />
           </label>
+          <div className="field-label">
+            Rating
+            <StarRating value={rating} onChange={setRating} />
+          </div>
           <label>Status
             <select value={status} onChange={(e) => setStatus(e.target.value as Status)}>
               {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}

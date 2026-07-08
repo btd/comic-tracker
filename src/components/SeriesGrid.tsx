@@ -1,5 +1,5 @@
 import { BookOpen } from 'lucide-react';
-import type { Series } from '../types';
+import type { Series, Status } from '../types';
 import SeriesCard from './SeriesCard';
 
 interface Props {
@@ -10,7 +10,16 @@ interface Props {
   onEdit: (series: Series) => void;
   onDelete: (series: Series) => void;
   onTogglePin: (id: string) => void;
+  onRate: (id: string, rating: number) => void;
 }
+
+// Section order and labels.
+const SECTIONS: { status: Status; label: string }[] = [
+  { status: 'reading', label: 'Reading' },
+  { status: 'on-hold', label: 'On hold' },
+  { status: 'completed', label: 'Completed' },
+  { status: 'dropped', label: 'Dropped' },
+];
 
 export default function SeriesGrid({ series, totalCount, ...handlers }: Props) {
   if (series.length === 0) {
@@ -21,11 +30,25 @@ export default function SeriesGrid({ series, totalCount, ...handlers }: Props) {
       </div>
     );
   }
+
   return (
-    <div className="grid">
-      {series.map((s) => (
-        <SeriesCard key={s.id} series={s} {...handlers} />
-      ))}
-    </div>
+    <>
+      {SECTIONS.map(({ status, label }) => {
+        const items = series.filter((s) => s.status === status);
+        if (items.length === 0) return null;
+        return (
+          <section key={status} className="status-section">
+            <h2 className="section-heading">
+              {label} <span className="section-count">{items.length}</span>
+            </h2>
+            <div className="grid">
+              {items.map((s) => (
+                <SeriesCard key={s.id} series={s} {...handlers} />
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </>
   );
 }

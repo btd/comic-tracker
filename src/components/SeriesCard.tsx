@@ -3,13 +3,7 @@ import { Plus, Minus, Pencil, Trash2, ExternalLink, Star } from 'lucide-react';
 import type { Series } from '../types';
 import { resolveCover, PLACEHOLDER_COVER } from '../lib/cover';
 import { relativeTime } from '../lib/relativeTime';
-
-const STATUS_LABEL: Record<Series['status'], string> = {
-  reading: 'Reading',
-  completed: 'Completed',
-  'on-hold': 'On hold',
-  dropped: 'Dropped',
-};
+import StarRating from './StarRating';
 
 interface Props {
   series: Series;
@@ -18,10 +12,11 @@ interface Props {
   onEdit: (series: Series) => void;
   onDelete: (series: Series) => void;
   onTogglePin: (id: string) => void;
+  onRate: (id: string, rating: number) => void;
 }
 
 export default function SeriesCard({
-  series, onIncrement, onDecrement, onEdit, onDelete, onTogglePin,
+  series, onIncrement, onDecrement, onEdit, onDelete, onTogglePin, onRate,
 }: Props) {
   const [src, setSrc] = useState(PLACEHOLDER_COVER);
 
@@ -72,8 +67,7 @@ export default function SeriesCard({
         {series.originalTitle && <div className="card-original">{series.originalTitle}</div>}
         {series.author && <div className="card-author">{series.author}</div>}
         <div className="card-meta">
-          <span className={`badge badge-${series.status}`}>{STATUS_LABEL[series.status]}</span>
-          {series.linkLabel && <span className="platform">{series.linkLabel}</span>}
+          <StarRating value={series.rating} size={16} onChange={(r) => onRate(series.id, r)} />
         </div>
         <div className="card-updated">Updated {relativeTime(series.updatedAt)}</div>
         <div className="card-chapter">

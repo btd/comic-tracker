@@ -62,6 +62,12 @@ function bool(v: unknown, dflt = false): boolean {
   return typeof v === 'boolean' ? v : dflt;
 }
 
+/** Clamp to 0–5 and snap to the nearest half. Non-numbers → 0. */
+function rating(v: unknown): number {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return 0;
+  return Math.min(5, Math.max(0, Math.round(v * 2) / 2));
+}
+
 function status(v: unknown): Status {
   return STATUSES.includes(v as Status) ? (v as Status) : 'reading';
 }
@@ -93,8 +99,8 @@ export async function deserialize(json: string): Promise<Series[]> {
       originalTitle: str(r.originalTitle, 'originalTitle'),
       author: str(r.author, 'author'),
       link: str(r.link, 'link'),
-      linkLabel: str(r.linkLabel, 'linkLabel'),
       lastChapter: Math.max(0, num(r.lastChapter)),
+      rating: rating(r.rating),
       status: status(r.status),
       coverType,
       coverUrl: str(r.coverUrl, 'coverUrl'),

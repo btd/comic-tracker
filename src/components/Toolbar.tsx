@@ -1,7 +1,7 @@
 import { Plus, Search, Download, Upload } from 'lucide-react';
 import type { Status } from '../types';
 
-export type SortKey = 'updated' | 'title' | 'chapter';
+export type SortKey = 'rating' | 'updated' | 'title';
 export type StatusFilter = 'all' | Status;
 
 interface Props {
@@ -34,9 +34,9 @@ export default function Toolbar(p: Props) {
         <option value="dropped">Dropped</option>
       </select>
       <select value={p.sort} onChange={(e) => p.onSort(e.target.value as SortKey)}>
+        <option value="rating">Rating high→low</option>
         <option value="updated">Recently updated</option>
         <option value="title">Title A–Z</option>
-        <option value="chapter">Chapter high→low</option>
       </select>
       <span className="spacer" />
       <button className="primary-btn" onClick={p.onAdd}><Plus size={16} /> Add</button>

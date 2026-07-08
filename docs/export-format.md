@@ -43,8 +43,8 @@ Unknown top-level fields are ignored (forward-compatible).
   "originalTitle": "나 혼자만 레벨업",
   "author": "Chugong",
   "link": "https://www.webtoons.com/en/action/solo-leveling/list?title_no=3162",
-  "linkLabel": "Webtoons",
   "lastChapter": 180,
+  "rating": 4.5,
   "status": "reading",
   "coverType": "url",
   "coverUrl": "https://example.com/cover.jpg",
@@ -61,8 +61,8 @@ Unknown top-level fields are ignored (forward-compatible).
 | `originalTitle` | string | `""` | Optional original-language title. Absent in v1 files. |
 | `author` | string | `""` | |
 | `link` | string | `""` | URL to the series page. |
-| `linkLabel` | string | `""` | Display label for the link, e.g. `"Webtoons"`. |
 | `lastChapter` | number ≥ 0 | `0` | Negative values are clamped to `0`. |
+| `rating` | number 0–5 (½ steps) | `0` | Personal rating. Clamped to range and snapped to the nearest half. Absent in v1 → `0`. |
 | `status` | `reading` \| `completed` \| `on-hold` \| `dropped` | `reading` | Unrecognized → `reading`. |
 | `coverType` | `url` \| `file` \| `none` | `none` | Selects which cover field applies. Unrecognized → `none`. |
 | `coverUrl` | string | `""` | Direct image URL. Used when `coverType` is `"url"`. |
@@ -95,7 +95,10 @@ wrong type. Unknown record fields are ignored.
 |---|---|---|
 | `pinned` field | absent | present |
 | `originalTitle` | absent | present |
+| `rating` field | absent | present |
+| `linkLabel` field | present (now ignored) | absent |
 | Read by current app | ✅ (missing fields defaulted) | ✅ |
 
-A v2 reader imports v1 files transparently (`pinned` → `false`, `originalTitle` → `""`).
+A v2 reader imports v1 files transparently (`pinned` → `false`, `originalTitle` → `""`,
+`rating` → `0`; any legacy `linkLabel` is ignored).
 There is no v1 writer in the current app; exports are always v2.

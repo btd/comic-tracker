@@ -4,8 +4,8 @@ import type { Series } from './types';
 
 function make(over: Partial<Series> = {}): Series {
   return {
-    id: 'a', title: 'Solo Leveling', originalTitle: '나 혼자만 레벨업', author: 'Chugong', link: '', linkLabel: '',
-    lastChapter: 12, status: 'reading', coverType: 'none', coverUrl: '',
+    id: 'a', title: 'Solo Leveling', originalTitle: '나 혼자만 레벨업', author: 'Chugong', link: '',
+    lastChapter: 12, rating: 0, status: 'reading', coverType: 'none', coverUrl: '',
     createdAt: 1, updatedAt: 2, pinned: false, ...over,
   };
 }

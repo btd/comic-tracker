@@ -8,8 +8,9 @@ export interface Series {
   originalTitle: string;
   author: string;
   link: string;
-  linkLabel: string;
   lastChapter: number;
+  /** 0–5 in 0.5 increments. */
+  rating: number;
   status: Status;
   coverType: CoverType;
   coverUrl: string;

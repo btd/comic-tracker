@@ -16,7 +16,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [sort, setSort] = useState<SortKey>('updated');
+  const [sort, setSort] = useState<SortKey>('rating');
   const [editing, setEditing] = useState<Series | null | undefined>(undefined); // undefined = closed
   const [importing, setImporting] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -77,6 +77,12 @@ export default function App() {
     const found = series.find((s) => s.id === id);
     if (!found) return;
     void persist({ ...found, pinned: !found.pinned, updatedAt: Date.now() });
+  }
+
+  function rate(id: string, rating: number) {
+    const found = series.find((s) => s.id === id);
+    if (!found || found.rating === rating) return;
+    void persist({ ...found, rating, updatedAt: Date.now() });
   }
 
   async function handleDelete(target: Series) {
@@ -154,8 +160,8 @@ export default function App() {
     );
     const sorted = [...filtered];
     if (sort === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title));
-    else if (sort === 'chapter') sorted.sort((a, b) => b.lastChapter - a.lastChapter);
-    else sorted.sort((a, b) => b.updatedAt - a.updatedAt);
+    else if (sort === 'updated') sorted.sort((a, b) => b.updatedAt - a.updatedAt);
+    else sorted.sort((a, b) => b.rating - a.rating); // 'rating' (default)
     sorted.sort((a, b) => Number(b.pinned) - Number(a.pinned)); // stable: pinned first
     return sorted;
   }, [series, search, statusFilter, sort]);
@@ -190,6 +196,7 @@ export default function App() {
         onEdit={(s) => setEditing(s)}
         onDelete={handleDelete}
         onTogglePin={togglePin}
+        onRate={rate}
       />
       {editing !== undefined && (
         <SeriesFormModal
