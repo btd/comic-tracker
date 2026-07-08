@@ -53,16 +53,19 @@
           "default": "",
           "description": "URL to the series page. May be empty."
         },
-        "linkLabel": {
-          "type": "string",
-          "default": "",
-          "description": "Optional display label for the link, e.g. \"Webtoons\"."
-        },
         "lastChapter": {
           "type": "number",
           "minimum": 0,
           "default": 0,
           "description": "Last chapter read. Negative values are clamped to 0 on import."
+        },
+        "rating": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5,
+          "multipleOf": 0.5,
+          "default": 0,
+          "description": "Personal rating, 0–5 in 0.5 increments. Clamped to range and snapped to the nearest half on import. Absent in version 1 files → 0."
         },
         "status": {
           "type": "string",
