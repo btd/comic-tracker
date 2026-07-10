@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Minus, Pencil, Trash2, ExternalLink, Star } from 'lucide-react';
+import { Plus, Minus, Pencil, Trash2, ExternalLink, Pin, PinOff } from 'lucide-react';
 import type { Series } from '../types';
 import { resolveCover, PLACEHOLDER_COVER } from '../lib/cover';
 import { relativeTime } from '../lib/relativeTime';
@@ -35,8 +35,11 @@ export default function SeriesCard({
         else if (e.key === '-') { e.preventDefault(); onDecrement(series.id); }
       }}
     >
-      <div className="card-cover">
+      <div className={`card-cover${series.pinned ? ' is-pinned' : ''}`}>
         <img src={src} alt={series.title} />
+        {series.pinned && (
+          <span className="pin-badge" aria-hidden="true"><Pin size={13} fill="currentColor" /></span>
+        )}
         <div className="cover-actions">
           <button
             className={`icon-btn${series.pinned ? ' pinned' : ''}`}
@@ -44,7 +47,7 @@ export default function SeriesCard({
             aria-pressed={series.pinned}
             onClick={() => onTogglePin(series.id)}
           >
-            <Star size={15} fill={series.pinned ? 'currentColor' : 'none'} />
+            {series.pinned ? <PinOff size={15} /> : <Pin size={15} />}
           </button>
           <button className="icon-btn" aria-label="Edit series" onClick={() => onEdit(series)}>
             <Pencil size={15} />

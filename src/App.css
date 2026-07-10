@@ -706,7 +706,26 @@ button:active {
 /* ---------- v2 additions ---------- */
 
 /* Pinned star */
-.icon-btn.pinned { color: var(--warn); border-color: var(--warn); }
+/* Pinned uses the accent (amber is reserved for rating stars). */
+.icon-btn.pinned { color: var(--accent-hi); border-color: var(--accent); background: var(--accent-soft); }
+
+/* Circular pin badge on the cover so the reason for top placement is obvious. */
+.pin-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  color: #fff;
+  background: linear-gradient(180deg, var(--accent-hi), var(--accent));
+  border-radius: 50%;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+.card-cover.is-pinned { box-shadow: inset 0 0 0 2px var(--accent); }
 
 /* Relative updated time */
 .card-updated { font-size: 11px; color: var(--text-faint); }
