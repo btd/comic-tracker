@@ -17,6 +17,7 @@ export default function ImportDialog({ onImport, onClose }: Props) {
   async function handleFile(file: File) {
     setError('');
     setParsed(null);
+    setConfirmReplace(false);
     try {
       const text = await file.text();
       const series = await deserialize(text);
