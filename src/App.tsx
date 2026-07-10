@@ -28,7 +28,12 @@ export default function App() {
   async function reload() {
     const list = await db.getAll();
     setSeries(
-      list.map((s) => ({ ...s, originalTitle: s.originalTitle ?? '', pinned: s.pinned ?? false })),
+      list.map((s) => ({
+        ...s,
+        originalTitle: s.originalTitle ?? '',
+        pinned: s.pinned ?? false,
+        rating: s.rating ?? 0,
+      })),
     );
   }
 
@@ -161,7 +166,7 @@ export default function App() {
     const sorted = [...filtered];
     if (sort === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title));
     else if (sort === 'updated') sorted.sort((a, b) => b.updatedAt - a.updatedAt);
-    else sorted.sort((a, b) => b.rating - a.rating); // 'rating' (default)
+    else sorted.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)); // 'rating' (default)
     sorted.sort((a, b) => Number(b.pinned) - Number(a.pinned)); // stable: pinned first
     return sorted;
   }, [series, search, statusFilter, sort]);
