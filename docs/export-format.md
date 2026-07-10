@@ -19,7 +19,7 @@ The schema's `$id` matches the hosted URL, so validators can resolve it by refer
 ```json
 {
   "app": "comic-tracker",
-  "version": 2,
+  "version": 3,
   "exportedAt": 1751932800000,
   "series": [ /* … */ ]
 }
@@ -28,7 +28,7 @@ The schema's `$id` matches the hosted URL, so validators can resolve it by refer
 | Field | Type | Notes |
 |---|---|---|
 | `app` | `"comic-tracker"` | Fixed marker. Import rejects files where this differs. |
-| `version` | `1` \| `2` | Writer emits `2`; reader accepts `1` and `2`. Other values are rejected. |
+| `version` | `1` \| `2` \| `3` | Writer emits `3`; reader accepts `1`, `2`, and `3`. Other values are rejected. |
 | `exportedAt` | integer (epoch ms) | When the file was written. Informational; ignored on import. |
 | `series` | array | The tracked titles (see below). |
 
@@ -46,6 +46,7 @@ Unknown top-level fields are ignored (forward-compatible).
   "lastChapter": 180,
   "rating": 4.5,
   "status": "reading",
+  "publication": "ongoing",
   "coverType": "url",
   "coverUrl": "https://example.com/cover.jpg",
   "createdAt": 1700000000000,
@@ -63,7 +64,8 @@ Unknown top-level fields are ignored (forward-compatible).
 | `link` | string | `""` | URL to the series page. |
 | `lastChapter` | number ≥ 0 | `0` | Negative values are clamped to `0`. |
 | `rating` | number 0–5 (½ steps) | `0` | Personal rating. Clamped to range and snapped to the nearest half. Absent in v1 → `0`. |
-| `status` | `reading` \| `completed` \| `on-hold` \| `dropped` | `reading` | Unrecognized → `reading`. |
+| `status` | `reading` \| `caught-up` \| `plan-to-read` \| `completed` \| `dropped` | `reading` | Legacy `on-hold` → `caught-up`. Unrecognized → `reading`. |
+| `publication` | `ongoing` \| `hiatus` \| `completed` \| `cancelled` \| `unknown` | `unknown` | The series' own state. Absent in v1/v2 → `unknown` (except migrated `completed` status → `completed`). |
 | `coverType` | `url` \| `file` \| `none` | `none` | Selects which cover field applies. Unrecognized → `none`. |
 | `coverUrl` | string | `""` | Direct image URL. Used when `coverType` is `"url"`. |
 | `coverDataUrl` | string (`data:…`) | — | Base64 data URL of an **uploaded** cover. Present only when `coverType` is `"file"`. Makes the export self-contained. |
@@ -91,14 +93,17 @@ wrong type. Unknown record fields are ignored.
 
 ## Version compatibility
 
-| | v1 | v2 (current) |
-|---|---|---|
-| `pinned` field | absent | present |
-| `originalTitle` | absent | present |
-| `rating` field | absent | present |
-| `linkLabel` field | present (now ignored) | absent |
-| Read by current app | ✅ (missing fields defaulted) | ✅ |
+| | v1 | v2 | v3 (current) |
+|---|---|---|---|
+| `originalTitle` | absent | present | present |
+| `pinned` field | absent | present | present |
+| `rating` field | absent | absent | present |
+| `publication` field | absent | absent | present |
+| `status` vocab | `reading`/`on-hold`/`completed`/`dropped` | same | `reading`/`caught-up`/`plan-to-read`/`completed`/`dropped` |
+| `linkLabel` field | present (now ignored) | present (ignored) | absent |
+| Read by current app | ✅ (migrated) | ✅ (migrated) | ✅ |
 
-A v2 reader imports v1 files transparently (`pinned` → `false`, `originalTitle` → `""`,
-`rating` → `0`; any legacy `linkLabel` is ignored).
-There is no v1 writer in the current app; exports are always v2.
+A v3 reader imports v1/v2 files transparently: legacy `on-hold` → `caught-up`,
+`completed` → `completed` + publication `completed`; missing `publication` → `unknown`;
+missing `rating`/`pinned`/`originalTitle` → defaults; any legacy `linkLabel` is ignored.
+There is no older writer in the current app; exports are always v3.
