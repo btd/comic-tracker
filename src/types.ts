@@ -1,4 +1,5 @@
-export type Status = 'reading' | 'completed' | 'on-hold' | 'dropped';
+export type Status = 'reading' | 'caught-up' | 'plan-to-read' | 'completed' | 'dropped';
+export type Publication = 'ongoing' | 'hiatus' | 'completed' | 'cancelled' | 'unknown';
 export type CoverType = 'url' | 'file' | 'none';
 
 export interface Series {
@@ -12,6 +13,8 @@ export interface Series {
   /** 0–5 in 0.5 increments. */
   rating: number;
   status: Status;
+  /** The series' own publication state. */
+  publication: Publication;
   coverType: CoverType;
   coverUrl: string;
   coverBlob?: Blob;
@@ -20,7 +23,24 @@ export interface Series {
   pinned: boolean;
 }
 
-export const STATUSES: Status[] = ['reading', 'completed', 'on-hold', 'dropped'];
+export const STATUSES: Status[] = ['reading', 'caught-up', 'plan-to-read', 'completed', 'dropped'];
+export const PUBLICATIONS: Publication[] = ['ongoing', 'hiatus', 'completed', 'cancelled', 'unknown'];
+
+export const STATUS_LABEL: Record<Status, string> = {
+  reading: 'Reading',
+  'caught-up': 'Caught up',
+  'plan-to-read': 'Plan to read',
+  completed: 'Completed',
+  dropped: 'Dropped',
+};
+
+export const PUBLICATION_LABEL: Record<Publication, string> = {
+  ongoing: 'Ongoing',
+  hiatus: 'Hiatus',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  unknown: 'Unknown',
+};
 
 export interface Meta {
   /** epoch ms of last successful export; 0 = never backed up */
@@ -36,7 +56,7 @@ export interface SeriesExport extends Omit<Series, 'coverBlob'> {
 
 export interface ExportEnvelope {
   app: 'comic-tracker';
-  version: 2;
+  version: 3;
   exportedAt: number;
   series: SeriesExport[];
 }

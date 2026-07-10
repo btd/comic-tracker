@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Minus, Pencil, Trash2, ExternalLink, Pin, PinOff } from 'lucide-react';
 import type { Series } from '../types';
+import { PUBLICATION_LABEL } from '../types';
 import { resolveCover, PLACEHOLDER_COVER } from '../lib/cover';
 import { relativeTime } from '../lib/relativeTime';
 import StarRating from './StarRating';
@@ -71,6 +72,11 @@ export default function SeriesCard({
         {series.author && <div className="card-author">{series.author}</div>}
         <div className="card-meta">
           <StarRating value={series.rating} size={16} onChange={(r) => onRate(series.id, r)} />
+          {series.publication !== 'unknown' && (
+            <span className={`pub-tag pub-${series.publication}`}>
+              {PUBLICATION_LABEL[series.publication]}
+            </span>
+          )}
         </div>
         <div className="card-updated">Updated {relativeTime(series.updatedAt)}</div>
         <div className="card-chapter">

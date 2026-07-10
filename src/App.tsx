@@ -9,6 +9,7 @@ import ImportDialog from './components/ImportDialog';
 import Toast, { type ToastState } from './components/Toast';
 import PWAUpdatePrompt from './components/PWAUpdatePrompt';
 import { relativeTime } from './lib/relativeTime';
+import { migrateStatus } from './lib/migrateStatus';
 import './App.css';
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
         originalTitle: s.originalTitle ?? '',
         pinned: s.pinned ?? false,
         rating: s.rating ?? 0,
+        ...migrateStatus(s.status, s.publication),
       })),
     );
   }

@@ -12,6 +12,7 @@ export default function ImportDialog({ onImport, onClose }: Props) {
   const [parsed, setParsed] = useState<Series[] | null>(null);
   const [error, setError] = useState('');
   const [confirmReplace, setConfirmReplace] = useState(false);
+  const [dragging, setDragging] = useState(false);
 
   async function handleFile(file: File) {
     setError('');
@@ -25,6 +26,13 @@ export default function ImportDialog({ onImport, onClose }: Props) {
     }
   }
 
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) void handleFile(file);
+  }
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -33,11 +41,31 @@ export default function ImportDialog({ onImport, onClose }: Props) {
           <button className="icon-btn" aria-label="Close" onClick={onClose}><X size={18} /></button>
         </div>
         <div className="modal-body">
-          <label className="file-drop">
-            <Upload size={20} /> Choose an export file (.json)
-            <input type="file" accept="application/json,.json" hidden
-              onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+          {/* Drop zone handles drag-and-drop; the picker is opened by the native
+              <label htmlFor> below (no programmatic .click(), which Chrome can suppress). */}
+          <div
+            className={`file-drop${dragging ? ' dragging' : ''}`}
+            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+          >
+            <Upload size={20} />
+            <span>Drag a backup here, or use the button below.</span>
+          </div>
+          <label htmlFor="import-file-input" className="primary-btn import-choose-btn">
+            Choose .json file…
           </label>
+          <input
+            id="import-file-input"
+            type="file"
+            accept="application/json,.json"
+            className="sr-only"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void handleFile(file);
+              e.target.value = ''; // allow re-selecting the same file
+            }}
+          />
           {error && <div className="form-error">{error}</div>}
           {parsed && (
             <div className="import-summary">

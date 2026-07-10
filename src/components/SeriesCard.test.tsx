@@ -7,7 +7,7 @@ import type { Series } from '../types';
 function make(over: Partial<Series> = {}): Series {
   return {
     id: 'a', title: 'Test', originalTitle: '', author: '', link: '',
-    lastChapter: 3, rating: 0, status: 'reading', coverType: 'none', coverUrl: '',
+    lastChapter: 3, rating: 0, status: 'reading', publication: 'unknown', coverType: 'none', coverUrl: '',
     createdAt: 1, updatedAt: Date.now(), pinned: false, ...over,
   };
 }
