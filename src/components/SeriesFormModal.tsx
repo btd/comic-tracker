@@ -1,13 +1,9 @@
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import type { Series, Status } from '../types';
-import { STATUSES } from '../types';
+import type { Series, Status, Publication } from '../types';
+import { STATUSES, PUBLICATIONS, STATUS_LABEL, PUBLICATION_LABEL } from '../types';
 import { makeThumbnail } from '../lib/thumbnail';
 import StarRating from './StarRating';
-
-const STATUS_LABEL: Record<Status, string> = {
-  reading: 'Reading', completed: 'Completed', 'on-hold': 'On hold', dropped: 'Dropped',
-};
 
 interface Props {
   initial: Series | null; // null = create
@@ -23,6 +19,21 @@ export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
   const [lastChapter, setLastChapter] = useState(String(initial?.lastChapter ?? 0));
   const [rating, setRating] = useState(initial?.rating ?? 0);
   const [status, setStatus] = useState<Status>(initial?.status ?? 'reading');
+  const [publication, setPublication] = useState<Publication>(initial?.publication ?? 'unknown');
+
+  // Choosing personal "Completed" auto-fills publication Completed (convenience).
+  function changeStatus(next: Status) {
+    setStatus(next);
+    if (next === 'completed' && publication === 'unknown') setPublication('completed');
+  }
+
+  // Non-blocking warnings for odd combinations.
+  const warning =
+    status === 'completed' && publication !== 'completed'
+      ? 'You marked this Completed but the series isn’t set to Completed.'
+      : status === 'caught-up' && (publication === 'completed' || publication === 'cancelled')
+        ? 'This series is finished — did you mean Completed?'
+        : '';
   // Default to file upload; keep URL mode only when editing an existing URL cover.
   const [coverMode, setCoverMode] = useState<'url' | 'file'>(
     initial?.coverType === 'url' ? 'url' : 'file',
@@ -63,6 +74,7 @@ export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
       lastChapter: chapter,
       rating,
       status,
+      publication,
       coverType,
       coverUrl: coverMode === 'url' ? coverUrl.trim() : '',
       coverBlob: coverMode === 'file' ? coverBlob : undefined,
@@ -94,11 +106,17 @@ export default function SeriesFormModal({ initial, onSave, onClose }: Props) {
             Rating
             <StarRating value={rating} onChange={setRating} />
           </div>
-          <label>Status
-            <select value={status} onChange={(e) => setStatus(e.target.value as Status)}>
+          <label>My status
+            <select value={status} onChange={(e) => changeStatus(e.target.value as Status)}>
               {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
             </select>
           </label>
+          <label>Publication
+            <select value={publication} onChange={(e) => setPublication(e.target.value as Publication)}>
+              {PUBLICATIONS.map((p) => <option key={p} value={p}>{PUBLICATION_LABEL[p]}</option>)}
+            </select>
+          </label>
+          {warning && <div className="form-warning">{warning}</div>}
           <fieldset className="cover-field">
             <legend>Cover</legend>
             <div className="cover-toggle">

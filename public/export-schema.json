@@ -12,8 +12,8 @@
     },
     "version": {
       "type": "integer",
-      "enum": [1, 2],
-      "description": "Export format version. Writer emits 2; reader accepts 1 and 2. Any other value is rejected."
+      "enum": [1, 2, 3],
+      "description": "Export format version. Writer emits 3; reader accepts 1, 2, and 3. Any other value is rejected."
     },
     "exportedAt": {
       "type": "integer",
@@ -69,9 +69,15 @@
         },
         "status": {
           "type": "string",
-          "enum": ["reading", "completed", "on-hold", "dropped"],
+          "enum": ["reading", "caught-up", "plan-to-read", "completed", "dropped"],
           "default": "reading",
-          "description": "Reading status. Unrecognized values fall back to \"reading\"."
+          "description": "My relationship with the series. Legacy \"on-hold\" (v1/v2) maps to \"caught-up\"; unrecognized values fall back to \"reading\"."
+        },
+        "publication": {
+          "type": "string",
+          "enum": ["ongoing", "hiatus", "completed", "cancelled", "unknown"],
+          "default": "unknown",
+          "description": "The series' own publication state. Absent in v1/v2 files → \"unknown\" (except a migrated \"completed\" status → \"completed\")."
         },
         "coverType": {
           "type": "string",

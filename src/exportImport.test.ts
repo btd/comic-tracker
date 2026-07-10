@@ -5,7 +5,7 @@ import type { Series } from './types';
 function make(over: Partial<Series> = {}): Series {
   return {
     id: 'a', title: 'Solo Leveling', originalTitle: '나 혼자만 레벨업', author: 'Chugong', link: '',
-    lastChapter: 12, rating: 0, status: 'reading', coverType: 'none', coverUrl: '',
+    lastChapter: 12, rating: 0, status: 'reading', publication: 'unknown', coverType: 'none', coverUrl: '',
     createdAt: 1, updatedAt: 2, pinned: false, ...over,
   };
 }
@@ -19,11 +19,13 @@ describe('exportImport', () => {
     });
   });
 
-  it('round-trips pinned in a v2 export', async () => {
-    const json = await serialize([make({ pinned: true })]);
-    expect(JSON.parse(json).version).toBe(2);
+  it('round-trips status + publication in a v3 export', async () => {
+    const json = await serialize([make({ pinned: true, status: 'caught-up', publication: 'hiatus' })]);
+    expect(JSON.parse(json).version).toBe(3);
     const out = await deserialize(json);
     expect(out[0].pinned).toBe(true);
+    expect(out[0].status).toBe('caught-up');
+    expect(out[0].publication).toBe('hiatus');
   });
 
   it('imports a v1 file and defaults pinned to false', async () => {
@@ -34,6 +36,16 @@ describe('exportImport', () => {
     const out = await deserialize(JSON.stringify(v1));
     expect(out[0].pinned).toBe(false);
     expect(out[0].title).toBe('Old');
+  });
+
+  it('migrates a legacy on-hold record to caught-up on import', async () => {
+    const v2 = {
+      app: 'comic-tracker', version: 2, exportedAt: 1,
+      series: [{ id: 'a', title: 'Legacy', status: 'on-hold' }],
+    };
+    const out = await deserialize(JSON.stringify(v2));
+    expect(out[0].status).toBe('caught-up');
+    expect(out[0].publication).toBe('unknown');
   });
 
   it('round-trips a file cover as blob -> base64 -> blob', async () => {

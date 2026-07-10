@@ -1,8 +1,8 @@
-import type { ExportEnvelope, Series, SeriesExport, Status } from './types';
-import { STATUSES } from './types';
+import type { ExportEnvelope, Series, SeriesExport } from './types';
+import { migrateStatus } from './lib/migrateStatus';
 
 const APP = 'comic-tracker';
-const VERSION = 2;
+const VERSION = 3;
 
 function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -68,9 +68,6 @@ function rating(v: unknown): number {
   return Math.min(5, Math.max(0, Math.round(v * 2) / 2));
 }
 
-function status(v: unknown): Status {
-  return STATUSES.includes(v as Status) ? (v as Status) : 'reading';
-}
 
 export async function deserialize(json: string): Promise<Series[]> {
   let parsed: unknown;
@@ -82,7 +79,7 @@ export async function deserialize(json: string): Promise<Series[]> {
   // Parsed input is arbitrary JSON, not a trusted envelope — read fields as unknown.
   const env = parsed as { app?: unknown; version?: unknown; series?: unknown };
   if (env?.app !== APP) throw new Error('Import failed: this is not a comic-tracker export file');
-  if (env.version !== 1 && env.version !== 2) {
+  if (env.version !== 1 && env.version !== 2 && env.version !== 3) {
     throw new Error(`Import failed: unsupported export version ${String(env.version)}`);
   }
   if (!Array.isArray(env.series)) throw new Error('Import failed: "series" must be a list');
@@ -101,7 +98,7 @@ export async function deserialize(json: string): Promise<Series[]> {
       link: str(r.link, 'link'),
       lastChapter: Math.max(0, num(r.lastChapter)),
       rating: rating(r.rating),
-      status: status(r.status),
+      ...migrateStatus(r.status, r.publication),
       coverType,
       coverUrl: str(r.coverUrl, 'coverUrl'),
       createdAt: num(r.createdAt) || now,

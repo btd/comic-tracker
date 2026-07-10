@@ -1,5 +1,6 @@
 import { Plus, Search, Download, Upload } from 'lucide-react';
 import type { Status } from '../types';
+import { STATUSES, STATUS_LABEL } from '../types';
 
 export type SortKey = 'rating' | 'updated' | 'title';
 export type StatusFilter = 'all' | Status;
@@ -28,10 +29,7 @@ export default function Toolbar(p: Props) {
       </div>
       <select value={p.statusFilter} onChange={(e) => p.onStatusFilter(e.target.value as StatusFilter)}>
         <option value="all">All statuses</option>
-        <option value="reading">Reading</option>
-        <option value="completed">Completed</option>
-        <option value="on-hold">On hold</option>
-        <option value="dropped">Dropped</option>
+        {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
       </select>
       <select value={p.sort} onChange={(e) => p.onSort(e.target.value as SortKey)}>
         <option value="rating">Rating high→low</option>

@@ -16,7 +16,8 @@ interface Props {
 // Section order and labels.
 const SECTIONS: { status: Status; label: string }[] = [
   { status: 'reading', label: 'Reading' },
-  { status: 'on-hold', label: 'On hold' },
+  { status: 'caught-up', label: 'Caught up' },
+  { status: 'plan-to-read', label: 'Plan to read' },
   { status: 'completed', label: 'Completed' },
   { status: 'dropped', label: 'Dropped' },
 ];
