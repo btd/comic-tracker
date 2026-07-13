@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Upload } from 'lucide-react';
 import type { Series } from '../types';
-import { deserialize } from '../exportImport';
+import { readBackup } from '../lib/backup';
 
 interface Props {
   onImport: (series: Series[], mode: 'merge' | 'replace') => void;
@@ -19,8 +19,7 @@ export default function ImportDialog({ onImport, onClose }: Props) {
     setParsed(null);
     setConfirmReplace(false);
     try {
-      const text = await file.text();
-      const series = await deserialize(text);
+      const series = await readBackup(file);
       setParsed(series);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Import failed');
@@ -54,12 +53,12 @@ export default function ImportDialog({ onImport, onClose }: Props) {
             <span>Drag a backup here, or use the button below.</span>
           </div>
           <label htmlFor="import-file-input" className="primary-btn import-choose-btn">
-            Choose .json file…
+            Choose backup (.zip)…
           </label>
           <input
             id="import-file-input"
             type="file"
-            accept="application/json,.json"
+            accept="application/zip,.zip"
             className="sr-only"
             onChange={(e) => {
               const file = e.target.files?.[0];

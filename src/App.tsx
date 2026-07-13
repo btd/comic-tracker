@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as db from './db';
-import { serialize } from './exportImport';
+import { createBackup } from './lib/backup';
 import type { Series } from './types';
 import Toolbar, { type SortKey, type StatusFilter } from './components/Toolbar';
 import SeriesGrid from './components/SeriesGrid';
@@ -109,14 +109,14 @@ export default function App() {
   }
 
   async function handleExport() {
-    const json = await serialize(series);
-    const blob = new Blob([json], { type: 'application/json' });
+    const blob = await createBackup(series);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `comic-tracker-export-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `comic-tracker-export-${new Date().toISOString().slice(0, 10)}.zip`;
     a.click();
-    URL.revokeObjectURL(url);
+    // Defer revoke so the browser reliably starts the download of large backups first.
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
     const now = Date.now();
     setLastBackupAt(now);
     await db.setMeta({ lastBackupAt: now }).catch(() => {});

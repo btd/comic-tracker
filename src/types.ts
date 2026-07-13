@@ -48,15 +48,3 @@ export interface Meta {
 }
 
 export const DEFAULT_META: Meta = { lastBackupAt: 0 };
-
-/** A Series as it appears in an export file: blob replaced by a base64 data URL. */
-export interface SeriesExport extends Omit<Series, 'coverBlob'> {
-  coverDataUrl?: string;
-}
-
-export interface ExportEnvelope {
-  app: 'comic-tracker';
-  version: 3;
-  exportedAt: number;
-  series: SeriesExport[];
-}

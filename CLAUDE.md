@@ -12,20 +12,23 @@ data in IndexedDB, deployed to GitHub Pages.
 ## Architecture
 - `src/db.ts` — the ONLY module that talks to IndexedDB (via `idb`). Stores: `series`
   (keyed by id) and `meta` (key/value; `lastBackupAt`). DB is at version 2.
-- `src/exportImport.ts` — PURE serialize/deserialize. No React/IDB imports. Export
-  envelope is version 2; deserialize also accepts version 1 (backward compatible).
+- `src/lib/backup.ts` — PURE `.zip` backup create/read (via `fflate`). No React/IDB
+  imports. Archive = `meta.json` (app + `formatVersion`) + `data.json` (series) +
+  `covers/<id>.<ext>` raw image bytes. `formatVersion` in meta.json is the format's
+  source of truth. No backward-compat with the old JSON backups.
 - `src/App.tsx` — owns in-memory `Series[]` and is the ONLY caller of `db`. Children
   receive data + callbacks.
 - `src/lib/*` — pure helpers: `cover` (image src resolution + object URLs),
-  `relativeTime`, `thumbnail` (canvas → WebP downscale on upload).
+  `relativeTime`, `thumbnail` (canvas → WebP downscale on upload), `migrateStatus`
+  (normalizes status/publication on load + import), `backup` (see above).
 - `src/components/*` — Toolbar, SeriesGrid, SeriesCard, SeriesFormModal, ImportDialog,
   Toast, PWAUpdatePrompt.
 
 ## Conventions
 - TypeScript strict; modern JSX transform (no per-file `import React`).
 - One responsibility per file; keep files focused.
-- Covers: URL string OR uploaded Blob (thumbnailed) stored in IndexedDB; exports inline
-  covers as base64 data URLs so a backup file is self-contained.
+- Covers: URL string OR uploaded Blob (thumbnailed) stored in IndexedDB; backups store
+  uploaded covers as raw binary files inside the `.zip` (see `src/lib/backup.ts`).
 
 ## Deploy
 - `base` is `/comic-tracker/` (served at https://btd.github.io/comic-tracker/).
