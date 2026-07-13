@@ -115,7 +115,8 @@ export default function App() {
     a.href = url;
     a.download = `comic-tracker-export-${new Date().toISOString().slice(0, 10)}.zip`;
     a.click();
-    URL.revokeObjectURL(url);
+    // Defer revoke so the browser reliably starts the download of large backups first.
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
     const now = Date.now();
     setLastBackupAt(now);
     await db.setMeta({ lastBackupAt: now }).catch(() => {});
