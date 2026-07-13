@@ -1,113 +1,58 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://btd.github.io/comic-tracker/export-schema.json",
-  "title": "Comic Tracker Export",
-  "description": "Self-contained backup file produced by Comic Tracker's Export button and consumed by Import.",
-  "type": "object",
-  "required": ["app", "version", "series"],
-  "properties": {
-    "app": {
-      "const": "comic-tracker",
-      "description": "Fixed marker identifying the file as a Comic Tracker export. Import rejects any other value."
-    },
-    "version": {
-      "type": "integer",
-      "enum": [1, 2, 3],
-      "description": "Export format version. Writer emits 3; reader accepts 1, 2, and 3. Any other value is rejected."
-    },
-    "exportedAt": {
-      "type": "integer",
-      "description": "Epoch milliseconds when the file was written. Informational; ignored on import."
-    },
-    "series": {
-      "type": "array",
-      "description": "The tracked titles.",
-      "items": { "$ref": "#/$defs/series" }
-    }
-  },
-  "additionalProperties": true,
+  "title": "Comic Tracker Backup (JSON entries)",
+  "description": "Schemas for the JSON entries inside a Comic Tracker .zip backup: meta.json and data.json. Cover images are stored as raw binary files under covers/ and are not described here.",
   "$defs": {
+    "meta": {
+      "title": "meta.json",
+      "type": "object",
+      "required": ["app", "formatVersion"],
+      "properties": {
+        "app": { "const": "comic-tracker", "description": "Fixed marker. Import rejects any other value." },
+        "formatVersion": { "type": "integer", "enum": [1], "description": "Archive format version. Determines how data.json and covers/ are interpreted." },
+        "exportedAt": { "type": "integer", "description": "Epoch milliseconds when the backup was written. Informational." }
+      },
+      "additionalProperties": true
+    },
+    "data": {
+      "title": "data.json",
+      "type": "object",
+      "required": ["series"],
+      "properties": {
+        "series": { "type": "array", "items": { "$ref": "#/$defs/series" } }
+      },
+      "additionalProperties": true
+    },
     "series": {
       "type": "object",
-      "description": "One tracked manga/manhwa. On import, `title` is required and non-empty; `id` is auto-generated when absent but must be non-empty if present. Every other field has a safe default, and unknown fields are ignored.",
       "required": ["title"],
       "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Stable unique identifier (a UUID for app-created records). Used to de-duplicate on merge import. If the field is absent, a UUID is generated on import; if present it must be non-empty (an empty string is rejected)."
-        },
-        "title": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Primary (typically English) title. Required and non-empty."
-        },
-        "originalTitle": {
-          "type": "string",
-          "default": "",
-          "description": "Optional original-language title (e.g. Korean/Japanese)."
-        },
+        "id": { "type": "string", "minLength": 1, "description": "Stable id; auto-generated if absent, must be non-empty if present." },
+        "title": { "type": "string", "minLength": 1, "description": "Required, non-empty." },
+        "originalTitle": { "type": "string", "default": "" },
         "author": { "type": "string", "default": "" },
-        "link": {
-          "type": "string",
-          "default": "",
-          "description": "URL to the series page. May be empty."
-        },
-        "lastChapter": {
-          "type": "number",
-          "minimum": 0,
-          "default": 0,
-          "description": "Last chapter read. Negative values are clamped to 0 on import."
-        },
-        "rating": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 5,
-          "multipleOf": 0.5,
-          "default": 0,
-          "description": "Personal rating, 0–5 in 0.5 increments. Clamped to range and snapped to the nearest half on import. Absent in version 1 files → 0."
-        },
+        "link": { "type": "string", "default": "" },
+        "lastChapter": { "type": "number", "minimum": 0, "default": 0 },
+        "rating": { "type": "number", "minimum": 0, "maximum": 5, "multipleOf": 0.5, "default": 0 },
         "status": {
           "type": "string",
           "enum": ["reading", "caught-up", "plan-to-read", "completed", "dropped"],
           "default": "reading",
-          "description": "My relationship with the series. Legacy \"on-hold\" (v1/v2) maps to \"caught-up\"; unrecognized values fall back to \"reading\"."
+          "description": "My relationship with the series. Unrecognized values fall back to \"reading\"."
         },
         "publication": {
           "type": "string",
           "enum": ["ongoing", "hiatus", "completed", "cancelled", "unknown"],
           "default": "unknown",
-          "description": "The series' own publication state. Absent in v1/v2 files → \"unknown\" (except a migrated \"completed\" status → \"completed\")."
+          "description": "The series' own publication state."
         },
-        "coverType": {
-          "type": "string",
-          "enum": ["url", "file", "none"],
-          "default": "none",
-          "description": "How the cover is stored: \"url\" uses coverUrl; \"file\" uses coverDataUrl; \"none\" shows a placeholder. Unrecognized values fall back to \"none\"."
-        },
-        "coverUrl": {
-          "type": "string",
-          "default": "",
-          "description": "Direct image URL. Used when coverType is \"url\"."
-        },
-        "coverDataUrl": {
-          "type": "string",
-          "description": "Base64 data URL of an uploaded cover image, e.g. \"data:image/webp;base64,...\". Present only when coverType is \"file\". This is what makes an export self-contained (no external image dependency). Decoded back into a stored image on import.",
-          "pattern": "^data:"
-        },
-        "createdAt": {
-          "type": "integer",
-          "description": "Epoch milliseconds the record was created. Defaults to import time if missing or 0."
-        },
-        "updatedAt": {
-          "type": "integer",
-          "description": "Epoch milliseconds the record last changed. Defaults to import time if missing or 0."
-        },
-        "pinned": {
-          "type": "boolean",
-          "default": false,
-          "description": "Whether the series is pinned to the top of the list. Absent in version 1 files; defaults to false."
-        }
+        "coverType": { "type": "string", "enum": ["url", "file", "none"], "default": "none" },
+        "coverUrl": { "type": "string", "default": "", "description": "Used when coverType is \"url\"." },
+        "coverFile": { "type": "string", "description": "Filename under covers/ in the zip. Present only when coverType is \"file\"." },
+        "createdAt": { "type": "integer" },
+        "updatedAt": { "type": "integer" },
+        "pinned": { "type": "boolean", "default": false }
       },
       "additionalProperties": true
     }

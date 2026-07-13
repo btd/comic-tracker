@@ -1,109 +1,70 @@
-# Comic Tracker — Export / Import Format
+# Comic Tracker — Backup Format
 
-Comic Tracker's **Export** button downloads a single self-contained JSON file
-(`comic-tracker-export-YYYY-MM-DD.json`). **Import** reads that same file. The file
-holds your entire list, with uploaded cover images inlined as base64 so it is portable
-across machines and browsers with no external dependencies.
+Comic Tracker's **Export** button downloads a `.zip` backup
+(`comic-tracker-export-YYYY-MM-DD.zip`). **Import** reads that same `.zip`. The archive
+separates metadata, data, and images into distinct entries; uploaded cover images are
+stored as raw binary files (no base64 bloat).
 
-A machine-readable JSON Schema (Draft 2020-12) is published at a stable URL and shipped
-with the app:
+A machine-readable JSON Schema for the archive's JSON entries is published at a stable
+URL and shipped with the app:
 
 - **Hosted:** <https://btd.github.io/comic-tracker/export-schema.json>
-- **In the repo:** [`public/export-schema.json`](../public/export-schema.json) (copied to
-  the site root at build time).
+- **In the repo:** [`public/export-schema.json`](../public/export-schema.json)
 
-The schema's `$id` matches the hosted URL, so validators can resolve it by reference.
+> Backups produced before this format (plain `.json`) are **not** importable.
 
-## Envelope
+## Archive layout
 
-```json
-{
-  "app": "comic-tracker",
-  "version": 3,
-  "exportedAt": 1751932800000,
-  "series": [ /* … */ ]
-}
+```
+meta.json            { app: "comic-tracker", formatVersion: 1, exportedAt: <epoch ms> }
+data.json            { series: SeriesRecord[] }
+covers/<id>.<ext>    raw image bytes — one per record with coverType "file"
 ```
 
-| Field | Type | Notes |
-|---|---|---|
-| `app` | `"comic-tracker"` | Fixed marker. Import rejects files where this differs. |
-| `version` | `1` \| `2` \| `3` | Writer emits `3`; reader accepts `1`, `2`, and `3`. Other values are rejected. |
-| `exportedAt` | integer (epoch ms) | When the file was written. Informational; ignored on import. |
-| `series` | array | The tracked titles (see below). |
+- **meta.json** is the self-describing header. Import reads it first and checks
+  `app === "comic-tracker"` and `formatVersion`. `formatVersion` (currently **1**) is the
+  single source of truth for how the rest of the archive is interpreted.
+- **data.json** holds the series array (see the record table below).
+- **covers/** holds one binary image per file-cover, named `<series.id>.<ext>` where
+  `<ext>` is derived from the image MIME type (`webp`, `jpg`, `png`, `gif`, or `bin`).
 
-Unknown top-level fields are ignored (forward-compatible).
-
-## Series record
-
-```json
-{
-  "id": "b3f1c2a4-5e6d-4f7a-8b9c-0d1e2f3a4b5c",
-  "title": "Solo Leveling",
-  "originalTitle": "나 혼자만 레벨업",
-  "author": "Chugong",
-  "link": "https://www.webtoons.com/en/action/solo-leveling/list?title_no=3162",
-  "lastChapter": 180,
-  "rating": 4.5,
-  "status": "reading",
-  "publication": "ongoing",
-  "coverType": "url",
-  "coverUrl": "https://example.com/cover.jpg",
-  "createdAt": 1700000000000,
-  "updatedAt": 1751900000000,
-  "pinned": true
-}
-```
+## Series record (in `data.json`)
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
-| `id` | string (non-empty) | generated | Stable unique id; de-dupes on merge import. Auto-generated (UUID) if absent; must be non-empty if present. |
-| `title` | string (non-empty) | — | **Required.** Primary/English title. |
-| `originalTitle` | string | `""` | Optional original-language title. Absent in v1 files. |
+| `id` | string (non-empty) | generated | Stable id; de-dupes on merge import. |
+| `title` | string (non-empty) | — | **Required.** |
+| `originalTitle` | string | `""` | Optional original-language title. |
 | `author` | string | `""` | |
 | `link` | string | `""` | URL to the series page. |
-| `lastChapter` | number ≥ 0 | `0` | Negative values are clamped to `0`. |
-| `rating` | number 0–5 (½ steps) | `0` | Personal rating. Clamped to range and snapped to the nearest half. Absent in v1 → `0`. |
-| `status` | `reading` \| `caught-up` \| `plan-to-read` \| `completed` \| `dropped` | `reading` | Legacy `on-hold` → `caught-up`. Unrecognized → `reading`. |
-| `publication` | `ongoing` \| `hiatus` \| `completed` \| `cancelled` \| `unknown` | `unknown` | The series' own state. Absent in v1/v2 → `unknown` (except migrated `completed` status → `completed`). |
-| `coverType` | `url` \| `file` \| `none` | `none` | Selects which cover field applies. Unrecognized → `none`. |
-| `coverUrl` | string | `""` | Direct image URL. Used when `coverType` is `"url"`. |
-| `coverDataUrl` | string (`data:…`) | — | Base64 data URL of an **uploaded** cover. Present only when `coverType` is `"file"`. Makes the export self-contained. |
-| `createdAt` | integer (epoch ms) | import time | Defaults to import time if missing or `0`. |
-| `updatedAt` | integer (epoch ms) | import time | Defaults to import time if missing or `0`. |
-| `pinned` | boolean | `false` | Pin to top of list. Absent in v1 files → `false`. |
+| `lastChapter` | number ≥ 0 | `0` | Clamped to ≥ 0. |
+| `rating` | number 0–5 (½ steps) | `0` | Personal rating. |
+| `status` | `reading` \| `caught-up` \| `plan-to-read` \| `completed` \| `dropped` | `reading` | My relationship with the series. |
+| `publication` | `ongoing` \| `hiatus` \| `completed` \| `cancelled` \| `unknown` | `unknown` | The series' own state. |
+| `coverType` | `url` \| `file` \| `none` | `none` | Selects which cover field applies. |
+| `coverUrl` | string | `""` | Used when `coverType` is `"url"`. |
+| `coverFile` | string | — | Filename in `covers/`. Present only when `coverType` is `"file"`. |
+| `createdAt` | integer (epoch ms) | import time | |
+| `updatedAt` | integer (epoch ms) | import time | |
+| `pinned` | boolean | `false` | Pin to top of its section. |
 
-`title` is required and non-empty; `id` is auto-generated when absent (but rejected if
-present-and-empty). Every other field is coerced to a safe default if missing or the
-wrong type. Unknown record fields are ignored.
+Only `title` is strictly required; other fields coerce to safe defaults. Unknown fields
+are ignored.
 
 ## Import behavior
 
-- **Validation.** The file must parse as JSON, have `app: "comic-tracker"`, a `version`
-  of `1` or `2`, and `series` as an array. Each record must have a non-empty `title`
-  (and, if `id` is present, it must be non-empty). Any failure aborts the import with a
-  descriptive message and writes nothing.
-- **Cover images.** A `coverType: "file"` record's `coverDataUrl` is decoded back into a
-  stored image. `coverType: "url"` uses `coverUrl` directly. `"none"` shows a placeholder.
-- **Merge vs. Replace.** Import offers two modes:
-  - **Merge** — records are upserted by `id` (an imported record overwrites an existing
-    one with the same `id`; others are kept).
-  - **Replace all** — clears the current list first, then loads the file (with an
-    in-app Undo available immediately afterward).
+- **Validation.** The file must be a valid zip containing `meta.json` (with
+  `app: "comic-tracker"` and a supported `formatVersion`) and `data.json` (with a
+  `series` array). Any failure aborts the import with a descriptive message; nothing is
+  written.
+- **Covers.** A `coverType: "file"` record's `coverFile` is loaded from `covers/` and
+  re-attached as the stored image. If the referenced file is missing, that one record
+  degrades to `coverType: "none"` — the rest of the import still succeeds.
+- **Merge vs. Replace.** Merge upserts by `id`; Replace all clears the current list
+  first (with an in-app Undo immediately afterward).
 
-## Version compatibility
+## Size
 
-| | v1 | v2 | v3 (current) |
-|---|---|---|---|
-| `originalTitle` | absent | present | present |
-| `pinned` field | absent | present | present |
-| `rating` field | absent | absent | present |
-| `publication` field | absent | absent | present |
-| `status` vocab | `reading`/`on-hold`/`completed`/`dropped` | same | `reading`/`caught-up`/`plan-to-read`/`completed`/`dropped` |
-| `linkLabel` field | present (now ignored) | present (ignored) | absent |
-| Read by current app | ✅ (migrated) | ✅ (migrated) | ✅ |
-
-A v3 reader imports v1/v2 files transparently: legacy `on-hold` → `caught-up`,
-`completed` → `completed` + publication `completed`; missing `publication` → `unknown`;
-missing `rating`/`pinned`/`originalTitle` → defaults; any legacy `linkLabel` is ignored.
-There is no older writer in the current app; exports are always v3.
+Because cover images are stored as raw (already-compressed) bytes instead of base64
+inside JSON, a backup is roughly 25% smaller than the old JSON format, and `data.json`
+itself is tiny (metadata only). The bulk of the archive is the image bytes.
